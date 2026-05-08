@@ -1,8 +1,10 @@
+                oscL.connect(gainL).connect(panL).connect(audioCtx.destination);
+                oscR.connect(gainR).connect(panR).connect(audioCtx.destination);
 
-            isRunning = true;
-            overlay.classList.add('hidden');
-            animate();
-        }
+                oscL.start();
+                oscR.start();
 
-        function animate() {
-            if (!isRunning) return;
+                isRunning = true;
+                overlayDiv.classList.add('hidden');
+
+        
