@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Zen Hall | Resonance Sync</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        #overlay {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 1s ease;
+        }
+        h1 {
+            font-weight: 200;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            font-size: 1.2rem;
+        }
+        p {
+            font-weight: 300;
+            opacity: 0.4;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        .hidden {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1>Digital Zen Hall</h1>
+        <p>Click to Enter Resonance State<br>[ Please wear headphones ]</p>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const BASE_F = 200.0;
+        const DELTA_F = 20.0; // Beta wave for hyper-focus
+        let audioCtx = null;
+        let isRunning = false;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        async function startResonance() {
+            if (isRunning) return;
+            
+            // Initialize Web Audio API
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Left Channel Oscillator
+            const oscL = audioCtx.createOscillator();
+            const gainL = audioCtx.createGain();
+            const pannerL = audioCtx.createPanner();
+            
+            oscL.frequency.value = BASE_F;
+            gainL.gain.value = 0.2;
+            pannerL.setPosition(-1, 0, 0); // Full Left
+
+            // Right Channel Oscillator
+            const oscR = audioCtx.createOscillator();
+            const gainR = audioCtx.createGain();
+            const pannerR = {
+                osc: oscR,
+                gain: gainR,
+                pan: audioCtx.createPanner()
+            };
+            
+            oscR.frequency.value = BASE_F + DELTA_F;
+            gainR.gain.value = 0.2;
+            pannerR.pan.setPosition(1, 0, 0); // Full Right
+
+            // Connect L
+            oscL.connect(gainL).connect(pannerL).connect(audioCtx.destination);
+            // Connect R
+            oscR.connect(gainR).connect(pannerR.pan).connect(audioCtx.destination);
+
+            oscL.start();
+            oscR.start();
